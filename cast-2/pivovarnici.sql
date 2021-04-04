@@ -291,7 +291,7 @@ create table "objem_hospoda_varka"
                 on delete cascade,
     "id_varka"  NUMBER not null
         constraint OBJEM_HOSPODA_VARKA_VARKA_ID_FK
-            references "varka"
+            references "varka"("id")
                 on delete cascade
 )
 /
@@ -304,7 +304,7 @@ create table "varka_uzivatel"
                 on delete cascade,
     "id_varka"          NUMBER       not null
         constraint TABLE_NAME_VARKA_ID_FK
-            references "varka"
+            references "varka"("id")
                 on delete cascade,
     "id_varka_uzivatel" NUMBER generated as identity
         constraint TABLE_NAME_PK
