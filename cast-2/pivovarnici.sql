@@ -6,7 +6,7 @@ create table "prodejna"
     "nazev"       VARCHAR2(150) not null,
     "ulice"       VARCHAR2(80)  not null,
     "mesto"       VARCHAR2(50)  not null,
-    "PSC"         VARCHAR2(5)   not null
+    "PSC"         NUMBER(5)   not null
 )
 /
 
@@ -43,7 +43,7 @@ create table "hospoda"
     "nazev"  VARCHAR2(50),
     "ulice"       VARCHAR2(80)  not null,
     "mesto"       VARCHAR2(50)  not null,
-    "PSC"         VARCHAR2(5)   not null
+    "PSC"         NUMBER(5)   not null
 )
 /
 
@@ -54,7 +54,7 @@ create table "pivovar"
     "nazev"  VARCHAR2(50),
     "ulice"       VARCHAR2(80)  not null,
     "mesto"       VARCHAR2(50)  not null,
-    "PSC"         VARCHAR2(5)   not null
+    "PSC"         NUMBER(5)   not null
 )
 /
 
@@ -298,7 +298,7 @@ create table "objem_hospoda_varka"
 
 create table "varka_uzivatel"
 (
-    "id"       VARCHAR2(50) not null
+    "uzivatel_login"       VARCHAR2(50) not null
         constraint TABLE_NAME_UZIVATEL_LOGIN_FK
             references "uzivatel"
                 on delete cascade,
@@ -312,3 +312,36 @@ create table "varka_uzivatel"
 )
 /
 
+insert into "uzivatel" values (
+    'xbenes56',
+    'Dalibor',
+    'Beneš',
+    'sladek',
+    null
+)
+/
+
+insert into "uzivatel" values (
+    'xkotta00',
+    'Tadeáš',
+    'Kot',
+    'sladek',
+    null
+)
+
+insert into "hospoda" ("nazev", "ulice", "mesto", "PSC") values (
+    'U Lenina',
+    'Moravská',
+    'Svitavy',
+    '56802'
+)
+/
+
+insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel") values (
+    'grešlák',
+    '05',
+    'pilsner',
+    'spodni',
+    '5',
+    
+)
