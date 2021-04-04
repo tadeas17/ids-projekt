@@ -347,3 +347,21 @@ insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu",
     'xbenes56'
 )
 /
+insert into "prodejna" ("nazev", "ulice", "mesto", PSC)  values (
+                                                                 'U opilého hrocha',
+                                                                 'Božetěchova 2',
+                                                                 'Brno',
+                                                                 '61200'
+                                                                ) /
+insert into "surovina" ("nazev") values ('Žatecký chmel') /
+insert into "surovina" ("nazev") values ('Čerstvé kvasnice') /
+insert into "surovina" ("nazev") values ('Zrající slad') /
+insert into "slad" ("barva", "puvod", "extrakt", "id_surovina") values ('Tmavě žlutá', 'Polsko', 'Lesní', 2) /
+insert into "chmel" ("aroma", "horkost", "podil_alfa_kyselin", "misto_puvodu", "doba_sklizne", "id_surovina") values ('Citronove', 30, 5, 'Maďarsko', '2019-7-7', 1) /
+insert into "kvasnice" ("skupenstvi", "misto_kvaseni", "typ", "id_surovina") values ('kapalné', 'sklep', 'svrchni', 3)/
+insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (50000, 1, 1) /
+insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (20000, 1, 2) /
+insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (30000, 1, 3) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (3000, 1, 1) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (2000, 2, 1) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (500, 3, 1) /
