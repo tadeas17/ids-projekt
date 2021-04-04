@@ -3,8 +3,10 @@ create table "prodejna"
     "id" NUMBER generated as identity
         constraint PRODEJNA_PK
             primary key,
-    "nazev"       VARCHAR2(510) not null,
-    "adresa"      VARCHAR2(510) not null
+    "nazev"       VARCHAR2(150) not null,
+    "ulice"       VARCHAR2(80)  not null,
+    "mesto"       VARCHAR2(50)  not null,
+    "PSC"         VARCHAR2(5)   not null
 )
 /
 
@@ -36,19 +38,23 @@ create table "surovina_prodejna_mnozstvi"
 
 create table "hospoda"
 (
-    "id"     NUMBER not null
+    "id"     NUMBER generated as identity
         primary key,
     "nazev"  VARCHAR2(50),
-    "adresa" VARCHAR2(150)
+    "ulice"       VARCHAR2(80)  not null,
+    "mesto"       VARCHAR2(50)  not null,
+    "PSC"         VARCHAR2(5)   not null
 )
 /
 
 create table "pivovar"
 (
-    "id"     NUMBER not null
+    "id"     NUMBER generated as identity
         primary key,
     "nazev"  VARCHAR2(50),
-    "adresa" VARCHAR2(150)
+    "ulice"       VARCHAR2(80)  not null,
+    "mesto"       VARCHAR2(50)  not null,
+    "PSC"         VARCHAR2(5)   not null
 )
 /
 
@@ -69,7 +75,7 @@ create table "uzivatel"
 
 create table "sladkovsky_diplom"
 (
-    "id"            NUMBER not null
+    "id"            NUMBER generated as identity
         primary key,
     "datum_udeleni" DATE,
     "login_uzivatel"         VARCHAR2(50)
@@ -100,7 +106,7 @@ create table "hodnoceni_hospody"
 
 create table "ramcova_smlouva"
 (
-    "id"             NUMBER not null
+    "id"             NUMBER generated as identity
         primary key,
     "datum_uzavreni" DATE,
     "datum_ukonceni" DATE,
@@ -125,9 +131,9 @@ create table "pivo"
     "barva"          NUMBER(2)
         check ("barva" BETWEEN 1 and 80),
     "typ"            VARCHAR2(16)
-        check ("typ" in ('ale', 'stout', 'ipa', 'apa', 'red ipa')),
+        check ("typ" in ('ale', 'stout', 'ipa', 'apa', 'red ipa', 'lager', 'pilsner')),
     "zpusob_kvaseni" VARCHAR2(16)
-        check ("zpusob_kvaseni" in ('svrchně', 'spodně')),
+        check ("zpusob_kvaseni" in ('svrchni', 'spodni')),
     "obsah_alkoholu" NUMBER(2)     not null,
     "id_pivovaru"    NUMBER
         constraint PIVO_PIVOVAR_ID_FK
@@ -141,8 +147,6 @@ create table "pivo"
 create table "varka"
 (
     "id"               NUMBER not null
-        constraint VARKA_PK
-            primary key,
     "datum_vareni"     DATE,
     "objem[l]"       NUMBER(12, 2),
     "forma_distribuce" VARCHAR2(25),
@@ -150,15 +154,15 @@ create table "varka"
     "id_pivo"        NUMBER not null
         constraint VARKA_PIVO_ID_PIVO_FK
             references "pivo"
-                on delete cascade
+                on delete cascade,
+    constraint VARKA_PK
+        primary key ("id", "id_pivo")
 )
 /
 
 create table "seznam_vypitych_piv"
 (
     "id"  NUMBER generated as identity
-        constraint SEZNAM_VYPITYCH_PIV_PK
-        primary key,
     "objem_vypiteho_piva[ml]" NUMBER default 0 not null,
     "id_pivo"                 NUMBER
         constraint SEZNAM_VYPITYCH_PIV_PIVO_ID_PIVO_FK
@@ -167,7 +171,9 @@ create table "seznam_vypitych_piv"
     "login_uzivatel"             VARCHAR2(50)
         constraint SEZNAM_VYPITYCH_PIV_UZIVATEL_LOGIN_FK
             references "uzivatel"
-                on delete cascade
+                on delete cascade,
+    constraint SEZNAM_VYPITYCH_PIV_PK
+        primary key ("id", "id_pivo", "login_uzivatel")
 )
 /
 
@@ -279,7 +285,7 @@ create table "objem_hospoda_varka"
         constraint OBJEM_HOSPODA_VARKA_PK
             primary key,
     "objem[l]"  NUMBER not null,
-    "id_hopoda" NUMBER not null
+    "id_hospoda" NUMBER not null
         constraint OBJEM_HOSPODA_VARKA_HOSPODA_ID_FK
             references "hospoda"
                 on delete cascade,
