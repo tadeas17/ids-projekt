@@ -134,7 +134,7 @@ create table "pivo"
         check ("typ" in ('ale', 'stout', 'ipa', 'apa', 'red ipa', 'lager', 'pilsner')),
     "zpusob_kvaseni" VARCHAR2(16)
         check ("zpusob_kvaseni" in ('svrchni', 'spodni')),
-    "obsah_alkoholu" NUMBER(2)     not null,
+    "obsah_alkoholu" NUMBER(4,2)     not null,
     "id_pivovaru"    NUMBER
         constraint PIVO_PIVOVAR_ID_FK
             references "pivovar",
@@ -146,7 +146,7 @@ create table "pivo"
 
 create table "varka"
 (
-    "id"               NUMBER not null
+    "id"               NUMBER not null,
     "datum_vareni"     DATE,
     "objem[l]"       NUMBER(12, 2),
     "forma_distribuce" VARCHAR2(25),
@@ -162,7 +162,7 @@ create table "varka"
 
 create table "seznam_vypitych_piv"
 (
-    "id"  NUMBER generated as identity
+    "id"  NUMBER generated as identity,
     "objem_vypiteho_piva[ml]" NUMBER default 0 not null,
     "id_pivo"                 NUMBER
         constraint SEZNAM_VYPITYCH_PIV_PIVO_ID_PIVO_FK
@@ -328,6 +328,7 @@ insert into "uzivatel" values (
     'sladek',
     null
 )
+/
 
 insert into "hospoda" ("nazev", "ulice", "mesto", "PSC") values (
     'U Lenina',
@@ -342,6 +343,8 @@ insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu",
     '05',
     'pilsner',
     'spodni',
-    '5',
-    
+    '5.5',
+    null,
+    'xbenes56'
 )
+/
