@@ -146,7 +146,8 @@ create table "pivo"
 
 create table "varka"
 (
-    "id"               NUMBER generated as identity not null,
+    "id"               NUMBER generated as identity not null
+        primary key,
     "datum_vareni"     DATE,
     "objem[l]"       NUMBER(12, 2),
     "forma_distribuce" VARCHAR2(25),
@@ -154,9 +155,7 @@ create table "varka"
     "id_pivo"        NUMBER not null
         constraint VARKA_PIVO_ID_PIVO_FK
             references "pivo"
-                on delete cascade,
-    constraint VARKA_PK
-        primary key "id"
+                on delete cascade
 )
 /
 
