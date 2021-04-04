@@ -156,7 +156,7 @@ create table "varka"
             references "pivo"
                 on delete cascade,
     constraint VARKA_PK
-        primary key ("id", "id_pivo")
+        primary key "id"
 )
 /
 
