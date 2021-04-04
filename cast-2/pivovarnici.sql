@@ -146,7 +146,7 @@ create table "pivo"
 
 create table "varka"
 (
-    "id"               NUMBER not null,
+    "id"               NUMBER generated as identity not null,
     "datum_vareni"     DATE,
     "objem[l]"       NUMBER(12, 2),
     "forma_distribuce" VARCHAR2(25),
