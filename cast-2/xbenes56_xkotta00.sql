@@ -1,3 +1,24 @@
+DROP TABLE "varka_uzivatel";
+DROP TABLE "objem_hospoda_varka";
+DROP TABLE "hodnoceni_piva";
+DROP TABLE "kvasnice";
+DROP TABLE "chmel";
+DROP TABLE "slad";
+DROP TABLE "objem_pivo_ramcova_smlouva";
+DROP TABLE "surovina_pivo_mnozstvi";
+DROP TABLE "seznam_vypitych_piv";
+DROP TABLE "varka";
+DROP TABLE "pivo";
+DROP TABLE "ramcova_smlouva";
+DROP TABLE "hodnoceni_hospody";
+DROP TABLE "sladkovsky_diplom";
+DROP TABLE "uzivatel";
+DROP TABLE "pivovar";
+DROP TABLE "hospoda";
+DROP TABLE "surovina_prodejna_mnozstvi";
+DROP TABLE "surovina";
+DROP TABLE "prodejna";
+
 create table "prodejna"
 (
     "id" NUMBER generated as identity
@@ -146,8 +167,7 @@ create table "pivo"
 
 create table "varka"
 (
-    "id"               NUMBER generated as identity not null
-        primary key,
+    "id"               NUMBER generated as identity not null,
     "datum_vareni"     DATE,
     "objem[l]"       NUMBER(12, 2),
     "forma_distribuce" VARCHAR2(25),
@@ -155,7 +175,9 @@ create table "varka"
     "id_pivo"        NUMBER not null
         constraint VARKA_PIVO_ID_PIVO_FK
             references "pivo"
-                on delete cascade
+                on delete cascade,
+    constraint VARKA_PK
+        primary key ("id")
 )
 /
 
@@ -290,7 +312,7 @@ create table "objem_hospoda_varka"
                 on delete cascade,
     "id_varka"  NUMBER not null
         constraint OBJEM_HOSPODA_VARKA_VARKA_ID_FK
-            references "varka"("id")
+            references "varka"
                 on delete cascade
 )
 /
@@ -303,13 +325,13 @@ create table "varka_uzivatel"
                 on delete cascade,
     "id_varka"          NUMBER       not null
         constraint TABLE_NAME_VARKA_ID_FK
-            references "varka"("id")
+            references "varka"
                 on delete cascade,
     "id_varka_uzivatel" NUMBER generated as identity
         constraint TABLE_NAME_PK
             primary key
-)
-/
+);
+
 
 insert into "uzivatel" values (
     'xbenes56',
@@ -328,7 +350,6 @@ insert into "uzivatel" values (
     null
 )
 /
-
 insert into "hospoda" ("nazev", "ulice", "mesto", "PSC") values (
     'U Lenina',
     'Moravská',
@@ -339,10 +360,10 @@ insert into "hospoda" ("nazev", "ulice", "mesto", "PSC") values (
 
 insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel") values (
     'grešlák',
-    '05',
+    05,
     'pilsner',
     'spodni',
-    '5.5',
+    5.5,
     null,
     'xbenes56'
 )
@@ -352,16 +373,18 @@ insert into "prodejna" ("nazev", "ulice", "mesto", PSC)  values (
                                                                  'Božetěchova 2',
                                                                  'Brno',
                                                                  '61200'
-                                                                ) /
+                                                                )/
 insert into "surovina" ("nazev") values ('Žatecký chmel') /
 insert into "surovina" ("nazev") values ('Čerstvé kvasnice') /
 insert into "surovina" ("nazev") values ('Zrající slad') /
 insert into "slad" ("barva", "puvod", "extrakt", "id_surovina") values ('Tmavě žlutá', 'Polsko', 'Lesní', 2) /
-insert into "chmel" ("aroma", "horkost", "podil_alfa_kyselin", "misto_puvodu", "doba_sklizne", "id_surovina") values ('Citronove', 30, 5, 'Maďarsko', '2019-7-7', 1) /
+insert into "chmel" ("aroma", "horkost", "podil_alfa_kyselin", "misto_puvodu", "doba_sklizne", "id_surovina") values ('Citronove', 30, 5, 'Madarsko', '07/07/2019', 1) /
 insert into "kvasnice" ("skupenstvi", "misto_kvaseni", "typ", "id_surovina") values ('kapalné', 'sklep', 'svrchni', 3)/
 insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (50000, 1, 1) /
 insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (20000, 1, 2) /
-insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (30000, 1, 3) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (3000, 1, 1) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (2000, 2, 1) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (500, 3, 1) /
+insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (30000, 1, 3);
+
+
+
+
+
