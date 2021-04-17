@@ -336,6 +336,8 @@ insert into "pivovar" ("nazev", "ulice", "mesto", PSC) values ('Holba', 'Pivovar
 insert into "uzivatel" values ('xbenes56', 'Dalibor', 'Beneš', 'sladek', null)/
 insert into "uzivatel" values ('xkotta00', 'Tadeáš', 'Kot', 'sladek', (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1))/
 insert into "uzivatel" values ('ozrala69', 'Miloš', 'Zeman', 'user', null)/
+insert into "uzivatel" values ('tak_dam_si', 'Honza', 'Hrouda', 'user', null)/
+insert into "uzivatel" values ('rubik', 'Adam', 'Nový', 'user', null)/
 insert into "sladkovsky_diplom" ("datum_udeleni", "login_uzivatel") VALUES (TO_DATE('2021-04-13', 'YYYY-MM-DD'), 'xbenes56')/
 insert into "hospoda" ("nazev", "ulice", "mesto", "PSC") values ('U Lenina', 'Moravská 34', 'Svitavy', '56802')/
 insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel") values ('grešlák', 05, 'pilsner', 'spodni', 5.5, null, 'xbenes56')/
@@ -365,18 +367,25 @@ insert into "seznam_vypitych_piv" ("id_pivo", "login_uzivatel", "objem_vypiteho_
 insert into "hodnoceni_piva" ("datum", "hodnota", "komentar", "id_uzivatel", "id_pivo") values (TO_DATE('2020-12-24', 'YYYY-MM-DD'), 4, 'Super pivo, stačí pár kousků a hned je vám líp.', 'ozrala69', (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
 insert into "hodnoceni_piva" ("datum", "hodnota", "komentar", "id_uzivatel", "id_pivo") values (TO_DATE('2020-12-31', 'YYYY-MM-DD'), 1, 'Hnus, to se nedá pít.', 'ozrala69', (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1))/
 insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel") values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-11-15', 'YYYY-MM-DD'), 5, 'Výborný podnik, velký výběr piv.', 'ozrala69') /
+insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel") values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-10-19', 'YYYY-MM-DD'), 1, 'Odpad.', 'tak_dam_si') /
+insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel") values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-12-15', 'YYYY-MM-DD'), 5, 'Výborný tatarák.', 'rubik') /
 insert into "varka" ("datum_vareni", "objem[l]", "forma_distribuce", "cena", "id_pivo") values (TO_DATE('2020-11-12', 'YYYY-MM-DD'), 500, 'bečka', 15000, (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1))/
 insert into "varka" ("datum_vareni", "objem[l]", "forma_distribuce", "cena", "id_pivo") values (TO_DATE('2020-9-10', 'YYYY-MM-DD'), 100, 'skleněná láhev', 2500, (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM<= 1))/
 insert into "ramcova_smlouva" ("datum_uzavreni", "datum_ukonceni", "sleva", "id_hospody", "id_pivovaru") values (TO_DATE('2020-11-03', 'YYYY-MM-DD'), TO_DATE('2021-11-02', 'YYYY-MM-DD'), 2000, (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1))/
 insert into "objem_pivo_ramcova_smlouva" ("id_pivo", "id_ramcova_smlouva", "objem[l]") values ((select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1), (select "id" from "ramcova_smlouva" where "id_hospody" = (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1) and "id_pivovaru" = (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1) and ROWNUM <= 1), 250)/
 insert into "objem_hospoda_varka" ("objem[l]", "id_hospoda", "id_varka") values (50, (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), (select "id" from "varka" where "id_pivo" = (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1) and "datum_vareni" = TO_DATE('2020-9-10', 'YYYY-MM-DD') and ROWNUM <= 1));
 
-select "pivovar"."nazev" as "Jméno pivovaru", "pivo"."nazev" as "Pivo" from "pivovar" left join "pivo" on "pivovar"."id" = "pivo"."id_pivovaru"; /*Výpis všech pivovarů a případně jejich piv pokud nějáké mají */
-select p."nazev" as "Pivo", v."objem[l]" as "Objem [l]", TO_CHAR(v."datum_vareni", 'DD.MM.YYYY') as "Datum uvaření", v."forma_distribuce" as "Forma distribuce", v."cena" as "Cena" from "varka" v join "pivo" p on p."id" = v."id_pivo"; /*Zobrazi vsechny uvarene varky*/
-select hos."nazev" as "Název hospody", hod."hodnota" as "Počet hvězd", concat(u."jmeno", concat(' ', u."prijmeni")) as "Uživatel", hod."komentar" as "Komentář" from "hospoda" hos left join "hodnoceni_hospody" hod on hos."id" = hod."id_hospody" join "uzivatel" u on hod."login_uzivatel" = u."login";
-
-
-select * from "uzivatel";
-select * from "surovina";
-select * from "slad";
-select * from "pivovar";
+/*Výpis všech pivovarů a případně jejich piv pokud nějáké mají */
+select "pivovar"."nazev" as "Jméno pivovaru", "pivo"."nazev" as "Pivo" from "pivovar" left join "pivo" on "pivovar"."id" = "pivo"."id_pivovaru" order by "pivovar"."nazev";
+/*Zobrazi vsechny uvarene varky*/
+select p."nazev" as "Pivo", v."objem[l]" as "Objem [l]", TO_CHAR(v."datum_vareni", 'DD.MM.YYYY') as "Datum uvaření", v."forma_distribuce" as "Forma distribuce", v."cena" as "Cena" from "varka" v join "pivo" p on p."id" = v."id_pivo" order by p."nazev";
+/*Zobrazi vsechny hodnoceni, pro vsechny hospody*/
+select hos."nazev" as "Název hospody", hod."hodnota" as "Počet hvězd", concat(u."jmeno", concat(' ', u."prijmeni")) as "Uživatel", hod."komentar" as "Komentář" from "hospoda" hos left join "hodnoceni_hospody" hod on hos."id" = hod."id_hospody" join "uzivatel" u on hod."login_uzivatel" = u."login" order by hos."nazev";
+/*Zobrazi kolik objemu piva celkem vypil každý uživatel, pokud nějáké vypil*/
+select concat(u."jmeno", concat(' ', u."prijmeni")) as "Uživatel", sum(svp."objem_vypiteho_piva[ml]") as "Objem vypitého piva [ml]" from "uzivatel" u join "seznam_vypitych_piv" svp on u."login" = svp."login_uzivatel" group by u."login", u."jmeno", u."prijmeni" order by concat(u."jmeno", concat(' ', u."prijmeni"));
+/*Zobrazí počet druhů piv od každého pivovaru*/
+select pr."nazev" as "Pivovar", count(pv."id") as "Počet druhů piv" from "pivovar" pr left join "pivo" pv on pr."id" = pv."id_pivovaru" group by pr."nazev" order by pr."nazev";
+/*Zobrazí všechny hospody co mají hodnocení větší nebo rovna 3.5*/
+select hos."nazev" from "hospoda" hos where exists(select 1 from "hodnoceni_hospody" hod where hod."id_hospody" = hos."id" group by hod."id_hospody" having avg(hod."hodnota") >= 3.5 );
+/*Zobrazí všechna piva s hodnocením větším nebo rovno 3.5*/
+select pv."nazev" as "Pivo" from "pivo" pv where "id" IN (select hod."id_pivo" from "hodnoceni_piva" hod group by hod."id_pivo" having avg(hod."hodnota") >=3.5);
