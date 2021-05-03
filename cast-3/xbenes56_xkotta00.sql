@@ -513,23 +513,27 @@ create or replace trigger trigger_uzivatel_login
 insert into "uzivatel" ("login", "jmeno", "prijmeni", "typ_uzivatele", "id_pivovar") values (null, 'jakub', 'smrcka', 'user', null);
 select "login" as "Login" from "uzivatel" where "jmeno" = 'jakub' and "prijmeni" = 'smrcka';
 
+
 create or replace trigger trigger_varka_hospoda
     before insert on "objem_hospoda_varka"
     for each row
     when (new."objem[l]" > 0)
     declare varka_objem number;
+            hospody_maji number;
     begin
+        select coalesce(sum("objem[l]"),0) into hospody_maji from "objem_hospoda_varka" where "id_varka" = :new."id_varka";
         select "varka"."objem[l]" into varka_objem from "varka" where "varka"."id" = :new."id_varka";
-        if (varka_objem >= :new."objem[l]") then
-        update "varka" set "varka"."objem[l]" = "varka"."objem[l]" - :new."objem[l]" where "varka"."id" = :new."id_varka";
-        else
-             raise_application_error(-20000, 'Hospoda si nemuze vzit vic nez kolik piva z varky zbyva.' || varka_objem);
+        if (varka_objem < (hospody_maji + :new."objem[l]") ) then
+            varka_objem := varka_objem - hospody_maji;
+             raise_application_error(-20000, 'Hospoda si nemuze vzit vic nez kolik piva z varky zbyva. (zbyva: ' || varka_objem || ')');
         end if;
     end;
 
 
-insert into "objem_hospoda_varka" ("objem[l]", "id_hospoda", "id_varka") values (50, (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), (select "id" from "varka" where "id_pivo" = (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1) and "datum_vareni" = TO_DATE('2020-9-10', 'YYYY-MM-DD') and ROWNUM <= 1));
+insert into "objem_hospoda_varka" ("objem[l]", "id_hospoda", "id_varka") values (50, (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), (select "id" from "varka" where "id_pivo" = (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1) and "datum_vareni" = TO_DATE('2020-6-11', 'YYYY-MM-DD') and ROWNUM <= 1));
 select * from "varka";
+select * from "objem_hospoda_varka";
+select sum("objem[l]") from "objem_hospoda_varka" where "id_varka" = 10;
 
 /* Vypise, ve kterych prodejnach se vyskytuji na skladu suroviny pro konkretni pivo.*/
 create or replace procedure dostupnost_surovin(nazev_pivo in varchar2) as
