@@ -616,6 +616,7 @@ explain plan for
 select pv."nazev" as "Pivo", avg(hod."hodnota") as "Prumerne hodnoceni"
 from "pivo" pv
          inner join "hodnoceni_piva" hod on pv."id" = hod."id_pivo"
+where hod."hodnota" > 3.5
 group by pv."id", pv."nazev"
 order by pv."nazev";
 
@@ -623,13 +624,13 @@ order by pv."nazev";
 select *
 from table (dbms_xplan.display);
 
-create index "pivo_nazev" on "pivo" ("nazev");
-create index "pivo_hodnota" on "hodnoceni_piva" ("hodnota");
+create index "hodnoceni_piva_index" on "hodnoceni_piva" ("hodnota");
 
 explain plan for
 select pv."nazev" as "Pivo", avg(hod."hodnota") as "Prumerne hodnoceni"
 from "pivo" pv
          inner join "hodnoceni_piva" hod on pv."id" = hod."id_pivo"
+where hod."hodnota" > 3.5
 group by pv."id", pv."nazev"
 order by pv."nazev";
 
@@ -675,10 +676,10 @@ insert into "uzivatel"
 values ('franta00', 'Franta', 'Pepa', 'sladek', null);
 select concat(concat(concat(concat(u."jmeno", concat(' ', u."prijmeni")), ' ('), u."login"), ')') as "user"
 from "uzivatel" u
-where "typ_uzivatele" = 'sladek'; --da
+where "typ_uzivatele" = 'sladek';
 select *
-from "sladci_view";
+from "sladci_view"; --zde jeste neni videt zmena
 commit;
 select *
-from "sladci_view";
+from "sladci_view"; --tady jiz je i novy sladek franta00
 
