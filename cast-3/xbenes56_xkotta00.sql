@@ -19,8 +19,13 @@ DROP TABLE "surovina_prodejna_mnozstvi";
 DROP TABLE "surovina";
 DROP TABLE "prodejna";
 
+drop index "pivo_nazev";
 DROP INDEX "pivo_hodnota";
 DROP MATERIALIZED VIEW "uvarene_varky";
+drop trigger trigger_uzivatel_login;
+
+DROP SEQUENCE uzivatel_seq;
+CREATE SEQUENCE uzivatel_seq START WITH 1 INCREMENT BY 1 NOCYCLE;
 
 create table "prodejna"
 (
@@ -84,10 +89,10 @@ create table "pivovar"
 
 create table "uzivatel"
 (
-    "login"         VARCHAR2(50) not null
+    "login"         VARCHAR2(50)
         primary key,
-    "jmeno"         VARCHAR2(50),
-    "prijmeni"      VARCHAR2(50),
+    "jmeno"         VARCHAR2(50) not null,
+    "prijmeni"      VARCHAR2(50) not null,
     "typ_uzivatele" VARCHAR2(50) not null
         check ("typ_uzivatele" in ('admin', 'sladek', 'user')),
     "id_pivovar"    NUMBER
@@ -334,53 +339,146 @@ create table "varka_uzivatel"
         constraint TABLE_NAME_PK
             primary key
 );
-insert into "pivovar" ("nazev", "ulice", "mesto", PSC) values ('Litovel', 'Palackeho 934', 'Litovel', 78401)/
-insert into "pivovar" ("nazev", "ulice", "mesto", PSC) values ('Holba', 'Pivovarská 261', 'Hanušovice', 78833)/
-insert into "uzivatel" values ('xbenes56', 'Dalibor', 'Beneš', 'sladek', null)/
-insert into "uzivatel" values ('xkotta00', 'Tadeáš', 'Kot', 'sladek', (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1))/
-insert into "uzivatel" values ('ozrala69', 'Miloš', 'Zeman', 'user', null)/
-insert into "uzivatel" values ('tak_dam_si', 'Honza', 'Hrouda', 'user', null)/
-insert into "uzivatel" values ('rubik', 'Adam', 'Nový', 'user', null)/
-insert into "sladkovsky_diplom" ("datum_udeleni", "login_uzivatel") VALUES (TO_DATE('2021-04-13', 'YYYY-MM-DD'), 'xbenes56')/
-insert into "hospoda" ("nazev", "ulice", "mesto", "PSC") values ('U Lenina', 'Moravská 34', 'Svitavy', '56802')/
-insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel") values ('grešlák', 05, 'pilsner', 'spodni', 5.5, null, 'xbenes56')/
-insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel") values ('Gustav', 23, 'lager', 'spodni', 6.9, (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1), 'xkotta00')/
-insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel") values ('Moravan', 18, 'lager', 'spodni', 5.3, (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1), 'xkotta00')/
-insert into "prodejna" ("nazev", "ulice", "mesto", PSC)  values ('U opilého hrocha', 'Božetěchova 2', 'Brno', '61200')/
-insert into "surovina" ("nazev") values ('Žatecký chmel') /
-insert into "surovina" ("nazev") values ('Čerstvé kvasnice') /
-insert into "surovina" ("nazev") values ('Zrající slad') /
-insert into "slad" ("barva", "puvod", "extrakt", "id_surovina") values ('Tmavě žlutá', 'Polsko', 'Lesní', (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1)) /
-insert into "chmel" ("aroma", "horkost", "podil_alfa_kyselin", "misto_puvodu", "doba_sklizne", "id_surovina") values ('Citronove', 30, 5, 'Madarsko', '07/07/2019', (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1)) /
-insert into "kvasnice" ("skupenstvi", "misto_kvaseni", "typ", "id_surovina") values ('kapalné', 'sklep', 'svrchni', (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1))/
-insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (50000, (select "id" from "prodejna" where "nazev" = 'U opilého hrocha' and ROWNUM <= 1), (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1)) /
-insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (20000, (select "id" from "prodejna" where "nazev" = 'U opilého hrocha' and ROWNUM <= 1), (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1)) /
-insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny") values (30000, (select "id" from "prodejna" where "nazev" = 'U opilého hrocha' and ROWNUM <= 1), (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (5000, (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (500, (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (100, (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1))/
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (10000, (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (300, (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (400, (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (8000, (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (400, (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1)) /
-insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo") values (200, (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1), (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1)) /
-insert into "seznam_vypitych_piv" ("id_pivo", "login_uzivatel", "objem_vypiteho_piva[ml]") values ((select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1), 'ozrala69', 15000) /
-insert into "seznam_vypitych_piv" ("id_pivo", "login_uzivatel", "objem_vypiteho_piva[ml]") values ((select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1), 'ozrala69', 1000)/
-insert into "hodnoceni_piva" ("datum", "hodnota", "komentar", "id_uzivatel", "id_pivo") values (TO_DATE('2020-12-24', 'YYYY-MM-DD'), 4, 'Super pivo, stačí pár kousků a hned je vám líp.', 'ozrala69', (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
-insert into "hodnoceni_piva" ("datum", "hodnota", "komentar", "id_uzivatel", "id_pivo") values (TO_DATE('2020-12-31', 'YYYY-MM-DD'), 1, 'Hnus, to se nedá pít.', 'ozrala69', (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1))/
-insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel") values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-11-15', 'YYYY-MM-DD'), 5, 'Výborný podnik, velký výběr piv.', 'ozrala69') /
-insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel") values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-10-19', 'YYYY-MM-DD'), 1, 'Odpad.', 'tak_dam_si') /
-insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel") values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-12-15', 'YYYY-MM-DD'), 5, 'Výborný tatarák.', 'rubik') /
-insert into "varka" ("datum_vareni", "objem[l]", "forma_distribuce", "cena", "id_pivo") values (TO_DATE('2020-11-12', 'YYYY-MM-DD'), 500, 'bečka', 15000, (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1))/
-insert into "varka" ("datum_vareni", "objem[l]", "forma_distribuce", "cena", "id_pivo") values (TO_DATE('2020-9-10', 'YYYY-MM-DD'), 100, 'skleněná láhev', 2500, (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM<= 1))/
-insert into "ramcova_smlouva" ("datum_uzavreni", "datum_ukonceni", "sleva", "id_hospody", "id_pivovaru") values (TO_DATE('2020-11-03', 'YYYY-MM-DD'), TO_DATE('2021-11-02', 'YYYY-MM-DD'), 2000, (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1))/
-insert into "objem_pivo_ramcova_smlouva" ("id_pivo", "id_ramcova_smlouva", "objem[l]") values ((select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1), (select "id" from "ramcova_smlouva" where "id_hospody" = (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1) and "id_pivovaru" = (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1) and ROWNUM <= 1), 250)/
-insert into "objem_hospoda_varka" ("objem[l]", "id_hospoda", "id_varka") values (50, (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), (select "id" from "varka" where "id_pivo" = (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1) and "datum_vareni" = TO_DATE('2020-9-10', 'YYYY-MM-DD') and ROWNUM <= 1));
-
-insert into "varka_uzivatel" ("uzivatel_login", "id_varka") values ('xbenes56', (select "id" from "varka" where "id_pivo" = (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1) and ROWNUM <= 1))/
-insert into "varka_uzivatel" ("uzivatel_login", "id_varka") values ('xbenes56', (select "id" from "varka" where "id_pivo" = (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1) and ROWNUM <= 1)) /
-insert into "varka_uzivatel" ("uzivatel_login", "id_varka") values ('xkotta00', (select "id" from "varka" where "id_pivo" = (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1) and ROWNUM <= 1));
+insert into "pivovar" ("nazev", "ulice", "mesto", PSC)
+values ('Litovel', 'Palackeho 934', 'Litovel', 78401)/
+insert into "pivovar" ("nazev", "ulice", "mesto", PSC)
+values ('Holba', 'Pivovarská 261', 'Hanušovice', 78833)/
+insert into "uzivatel"
+values ('xbenes56', 'Dalibor', 'Beneš', 'sladek', null)/
+insert into "uzivatel"
+values ('xkotta00', 'Tadeáš', 'Kot', 'sladek', (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1))/
+insert into "uzivatel"
+values ('ozrala69', 'Miloš', 'Zeman', 'user', null)/
+insert into "uzivatel"
+values ('tak_dam_si', 'Honza', 'Hrouda', 'user', null)/
+insert into "uzivatel"
+values ('rubik', 'Adam', 'Nový', 'user', null)/
+insert into "sladkovsky_diplom" ("datum_udeleni", "login_uzivatel")
+VALUES (TO_DATE('2021-04-13', 'YYYY-MM-DD'), 'xbenes56')/
+insert into "hospoda" ("nazev", "ulice", "mesto", "PSC")
+values ('U Lenina', 'Moravská 34', 'Svitavy', '56802')/
+insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel")
+values ('grešlák', 05, 'pilsner', 'spodni', 5.5, null, 'xbenes56')/
+insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel")
+values ('Gustav', 23, 'lager', 'spodni', 6.9, (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1),
+        'xkotta00')/
+insert into "pivo" ("nazev", "barva", "typ", "zpusob_kvaseni", "obsah_alkoholu", "id_pivovaru", "login_uzivatel")
+values ('Moravan', 18, 'lager', 'spodni', 5.3, (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1),
+        'xkotta00')/
+insert into "prodejna" ("nazev", "ulice", "mesto", PSC)
+values ('U opilého hrocha', 'Božetěchova 2', 'Brno', '61200')/
+insert into "surovina" ("nazev")
+values ('Žatecký chmel') /
+insert into "surovina" ("nazev")
+values ('Čerstvé kvasnice') /
+insert into "surovina" ("nazev")
+values ('Zrající slad') /
+insert into "slad" ("barva", "puvod", "extrakt", "id_surovina")
+values ('Tmavě žlutá', 'Polsko', 'Lesní',
+        (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1)) /
+insert into "chmel" ("aroma", "horkost", "podil_alfa_kyselin", "misto_puvodu", "doba_sklizne", "id_surovina")
+values ('Citronove', 30, 5, 'Madarsko', '07/07/2019',
+        (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1)) /
+insert into "kvasnice" ("skupenstvi", "misto_kvaseni", "typ", "id_surovina")
+values ('kapalné', 'sklep', 'svrchni', (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1))/
+insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny")
+values (50000, (select "id" from "prodejna" where "nazev" = 'U opilého hrocha' and ROWNUM <= 1),
+        (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1)) /
+insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny")
+values (20000, (select "id" from "prodejna" where "nazev" = 'U opilého hrocha' and ROWNUM <= 1),
+        (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1)) /
+insert into "surovina_prodejna_mnozstvi" ("mnozstvi[g]", "id_prodejny", "id_suroviny")
+values (30000, (select "id" from "prodejna" where "nazev" = 'U opilého hrocha' and ROWNUM <= 1),
+        (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (5000, (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (500, (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (100, (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1))/
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (10000, (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (300, (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (400, (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (8000, (select "id" from "surovina" where "nazev" = 'Žatecký chmel' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (400, (select "id" from "surovina" where "nazev" = 'Čerstvé kvasnice' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1)) /
+insert into "surovina_pivo_mnozstvi" ("mnozstvi[g]", "id_suroviny", "id_pivo")
+values (200, (select "id" from "surovina" where "nazev" = 'Zrající slad' and ROWNUM <= 1),
+        (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1)) /
+insert into "seznam_vypitych_piv" ("id_pivo", "login_uzivatel", "objem_vypiteho_piva[ml]")
+values ((select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1), 'ozrala69', 15000) /
+insert into "seznam_vypitych_piv" ("id_pivo", "login_uzivatel", "objem_vypiteho_piva[ml]")
+values ((select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1), 'ozrala69', 1000)/
+insert into "hodnoceni_piva" ("datum", "hodnota", "komentar", "id_uzivatel", "id_pivo")
+values (TO_DATE('2020-12-24', 'YYYY-MM-DD'), 4, 'Super pivo, stačí pár kousků a hned je vám líp.', 'ozrala69',
+        (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)) /
+insert into "hodnoceni_piva" ("datum", "hodnota", "komentar", "id_uzivatel", "id_pivo")
+values (TO_DATE('2020-12-31', 'YYYY-MM-DD'), 1, 'Hnus, to se nedá pít.', 'ozrala69',
+        (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1))/
+insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel")
+values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-11-15', 'YYYY-MM-DD'), 5,
+        'Výborný podnik, velký výběr piv.', 'ozrala69') /
+insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel")
+values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-10-19', 'YYYY-MM-DD'), 1,
+        'Odpad.', 'tak_dam_si') /
+insert into "hodnoceni_hospody" ("id_hospody", "datum", "hodnota", "komentar", "login_uzivatel")
+values ((select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), TO_DATE('2020-12-15', 'YYYY-MM-DD'), 5,
+        'Výborný tatarák.', 'rubik') /
+insert into "varka" ("datum_vareni", "objem[l]", "forma_distribuce", "cena", "id_pivo")
+values (TO_DATE('2020-11-12', 'YYYY-MM-DD'), 500, 'bečka', 15000,
+        (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1))/
+insert into "varka" ("datum_vareni", "objem[l]", "forma_distribuce", "cena", "id_pivo")
+values (TO_DATE('2020-9-10', 'YYYY-MM-DD'), 100, 'skleněná láhev', 2500,
+        (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1))/
+insert into "varka" ("datum_vareni", "objem[l]", "forma_distribuce", "cena", "id_pivo")
+values (TO_DATE('2020-6-11', 'YYYY-MM-DD'), 200, 'pet láhev', 5000,
+        (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1))/
+insert into "ramcova_smlouva" ("datum_uzavreni", "datum_ukonceni", "sleva", "id_hospody", "id_pivovaru")
+values (TO_DATE('2020-11-03', 'YYYY-MM-DD'), TO_DATE('2021-11-02', 'YYYY-MM-DD'), 2000,
+        (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1),
+        (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1))/
+insert into "objem_pivo_ramcova_smlouva" ("id_pivo", "id_ramcova_smlouva", "objem[l]")
+values ((select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1), (select "id"
+                                                                             from "ramcova_smlouva"
+                                                                             where "id_hospody" =
+                                                                                   (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1)
+                                                                               and "id_pivovaru" =
+                                                                                   (select "id" from "pivovar" where "nazev" = 'Litovel' and ROWNUM <= 1)
+                                                                               and ROWNUM <= 1), 250)/
+insert into "objem_hospoda_varka" ("objem[l]", "id_hospoda", "id_varka")
+values (50, (select "id" from "hospoda" where "nazev" = 'U Lenina' and ROWNUM <= 1), (select "id"
+                                                                                      from "varka"
+                                                                                      where "id_pivo" =
+                                                                                            (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1)
+                                                                                        and "datum_vareni" = TO_DATE('2020-9-10', 'YYYY-MM-DD')
+                                                                                        and ROWNUM <= 1)) /
+insert into "varka_uzivatel" ("uzivatel_login", "id_varka")
+values ('xbenes56', (select "id"
+                     from "varka"
+                     where "id_pivo" = (select "id" from "pivo" where "nazev" = 'Gustav' and ROWNUM <= 1)
+                       and ROWNUM <= 1))/
+insert into "varka_uzivatel" ("uzivatel_login", "id_varka")
+values ('xbenes56', (select "id"
+                     from "varka"
+                     where "id_pivo" = (select "id" from "pivo" where "nazev" = 'grešlák' and ROWNUM <= 1)
+                       and ROWNUM <= 1)) /
+insert into "varka_uzivatel" ("uzivatel_login", "id_varka")
+values ('xkotta00', (select "id"
+                     from "varka"
+                     where "id_pivo" = (select "id" from "pivo" where "nazev" = 'Moravan' and ROWNUM <= 1)
+                       and ROWNUM <= 1));
 
 /*Výpis všech pivovarů a případně jejich piv pokud nějáké mají */
 select "pivovar"."nazev" as "Jméno pivovaru", "pivo"."nazev" as "Pivo" from "pivovar" left join "pivo" on "pivovar"."id" = "pivo"."id_pivovaru" order by "pivovar"."nazev";
@@ -396,6 +494,25 @@ select pr."nazev" as "Pivovar", count(pv."id") as "Počet druhů piv" from "pivo
 select hos."nazev" from "hospoda" hos where exists(select 1 from "hodnoceni_hospody" hod where hod."id_hospody" = hos."id" group by hod."id_hospody" having avg(hod."hodnota") >= 3.5 );
 /*Zobrazí všechna piva s hodnocením větším nebo rovno 3.5*/
 select pv."nazev" as "Pivo" from "pivo" pv where "id" IN (select hod."id_pivo" from "hodnoceni_piva" hod group by hod."id_pivo" having avg(hod."hodnota") >=3.5);
+
+
+
+--Trigger který automaticky vytvoří login pro uzivatele co zadal login null
+create or replace trigger trigger_uzivatel_login
+    before insert or update on "uzivatel"
+    for each row
+    when(new."login" is null)
+    declare uzivatel_login_numb number;
+    begin
+        select uzivatel_seq.nextval into uzivatel_login_numb from dual;
+        :new."login" := concat('x', concat(substr(:new."prijmeni", 1, 3), concat(substr(:new."jmeno", 1, 2), uzivatel_login_numb)));
+    end;
+
+--Zde se přidá uzivatel bez loginu a je mu vygenerován.
+insert into "uzivatel" ("login", "jmeno", "prijmeni", "typ_uzivatele", "id_pivovar") values (null, 'jakub', 'smrcka', 'user', null);
+select "login" as "Login" from "uzivatel" where "jmeno" = 'jakub' and "prijmeni" = 'smrcka';
+
+create or replace
 
 /* Vypise, ve kterych prodejnach se vyskytuji na skladu suroviny pro konkretni pivo.*/
 create or replace procedure dostupnost_surovin(nazev_pivo in varchar2) as
@@ -415,7 +532,6 @@ create or replace procedure dostupnost_surovin(nazev_pivo in varchar2) as
                                                   on "surovina_prodejna_mnozstvi"."id_prodejny" = "prodejna"."id"
                               order by "surovina"."nazev", "prodejna"."nazev";
     surovina suroviny_cursor%rowtype;
-
 begin
     open suroviny_cursor;
     if suroviny_cursor%NOTFOUND then
@@ -469,12 +585,10 @@ begin
 end;
 
 begin
-    hodnoceni_hospody_procedure('xkott00', 1, 5, 'Super');
+    hodnoceni_hospody_procedure('xkotta00', 1, 5, 'Super');
 end;
 
 
-
-select * from "hospoda";
 
 -- vypise prumerne hodnoceni piva
 explain plan for
@@ -484,9 +598,11 @@ from "pivo" pv
 group by pv."id", pv."nazev"
 order by pv."nazev";
 
+--pred zrychlenim
 select *
 from table (dbms_xplan.display);
 
+create index "pivo_nazev" on "pivo" ("nazev");
 create index "pivo_hodnota" on "hodnoceni_piva" ("hodnota");
 
 explain plan for
@@ -496,6 +612,7 @@ from "pivo" pv
 group by pv."id", pv."nazev"
 order by pv."nazev";
 
+--po zrychleni
 select *
 from table (dbms_xplan.display);
 
